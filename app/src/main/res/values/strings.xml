@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RemoveAdTest007</string>
+    <string name="app_name">Ad++</string>
     <string name="button">広告消す</string>
     <string name="pref_ad_removal_purchased">購入済み</string>
     <string name="pref_remove_ads_key">adfree</string>

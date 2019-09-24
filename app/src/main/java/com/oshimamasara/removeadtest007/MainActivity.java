@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -30,15 +32,23 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
     private SharedPreferences mSharedPreferences;///////アプリ設定を保存するために必要
     private BillingClient mBillingClient;
     private AdView mAdView;
-
+    WebView myWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        myWebView = findViewById(R.id.webview);
+        myWebView.getSettings().setDefaultTextEncodingName("utf-8");
+        myWebView.loadUrl("https://blog.codecamp.jp");
+        myWebView.setWebViewClient(new MyWebViewClient());
+
+
         MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
         mAdView = findViewById(R.id.adView);
+
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);  // SharedPreferences() 購入の有無に関係するレイアウトを保存するため
         mBillingClient = BillingClient.newBuilder(MainActivity.this).setListener(this).build();
@@ -58,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
         });
 
 
+
         mBuyButton = (Button) findViewById(R.id.buyButton);
         mBuyButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,6 +84,27 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
 
         queryPrefPurchases();
     }
+
+
+    // WebView
+    private class MyWebViewClient extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            return false;
+        }
+    }
+
+    // back function
+    @Override
+    public void onBackPressed() {
+        if(myWebView!= null && myWebView.canGoBack())
+            myWebView.goBack();// if there is previous page open it
+        else
+            super.onBackPressed();//if there is no previous page, close app
+    }
+
+
+
 
 
     private void queryPrefPurchases() {
