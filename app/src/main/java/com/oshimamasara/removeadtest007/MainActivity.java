@@ -51,14 +51,30 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
 
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);  // SharedPreferences() 購入の有無に関係するレイアウトを保存するため
+
         mBillingClient = BillingClient.newBuilder(MainActivity.this).setListener(this).build();
+        Log.i(TAG,"mBillingClient：:" + mBillingClient); //ok
+
         mBillingClient.startConnection(new BillingClientStateListener() {
+
             @Override
             public void onBillingSetupFinished(@BillingClient.BillingResponse int billingResponseCode) {
+                Log.i(TAG,"onBillingSetupFinished" + mBillingClient); //ok
                 if (billingResponseCode == BillingClient.BillingResponse.OK) {
                     Log.i(TAG,"BillingSetUpFinished:" + billingResponseCode); // Logcatに出力　0  接続OK
                     Log.i(TAG,"アイテム：" + ITEM_SKU_ADREMOVAL);
                 }
+                else
+
+                    Log.i(TAG,"onBillingSetupFinished else：" );
+                    Log.i(TAG,"onBillingSetupFinished else billingResponseCode:：" + billingResponseCode);
+                    //2019.1026 :  billingResponseCode// emulator:: 3 , Real Mobile ::0 //
+                    // billingResponseCode = 3  -> BILLING_UNAVAILABLE -> Billing API version is not supported for the type requested
+                    /*
+                    This state seems to be unable to read the user account information.
+                    This may happen because you are not logged in when using the emulator.
+                    Please test with actual machine.
+                    */
             }
 
             @Override
@@ -78,10 +94,13 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
                         .setType(BillingClient.SkuType.INAPP)
                         .build();
                 int responseCode = mBillingClient.launchBillingFlow(MainActivity.this, flowParams);
+                // launchBillingFlow() -> Start purchase process
+                // This package "com.oshimamasara.removeadtest007;" is not registered with the Google Play Console.
+                // You can't proceed with the purchase process because you haven't registered any billing items
+                Log.i(TAG,"After Tap button： ITEM_SKU_ADREMOVAL::"+ITEM_SKU_ADREMOVAL );
+                Log.i(TAG,"After Tap button： responseCode::"+responseCode );
             }
         });
-
-
         queryPrefPurchases();
     }
 
@@ -137,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
     //購入手続き後のデータ書き換え
     @Override
     public void onPurchasesUpdated(int responseCode, @Nullable List<com.android.billingclient.api.Purchase> purchases) {
+        Log.d(TAG, "if前：：" + responseCode);
         if (responseCode == BillingClient.BillingResponse.OK   //最初の購入フロー
                 && purchases != null) {
             Log.i(TAG,"購入手続き完了後の処理：：" + responseCode);
@@ -157,4 +177,24 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
     }
 }
 
+
+/*
+error history:
+From YouTube
+    https://www.youtube.com/watch?v=yBMwpeU0DdI&lc=Ugx7sbzwBWbHpMpJuTF4AaABAg
+    "New iap purchase dependencies showing ERROR in yours codes!!! Please provide update code for one time in app purchase"
+
+Checked
+    Emulator
+    billingResponseCode = 3  -> BILLING_UNAVAILABLE -> Billing API version is not supported for the type requested
+    Test with actual machine.
+
+    Actual Machine
+    Current Activity:false
+    Because it is not registered in google play console.
+    Apps with the same content are running.
+        https://play.google.com/store/apps/details?id=com.oshimamasara.removead000
+
+
+ */
 
